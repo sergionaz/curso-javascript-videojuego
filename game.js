@@ -1,14 +1,18 @@
+/* Selectores HTML */
 const canvas = document.querySelector('#game');
 const game = canvas.getContext('2d');
 const btnUp = document.querySelector('#up');
 const btnLeft = document.querySelector('#left');
 const btnRight = document.querySelector('#right');
 const btnDown = document.querySelector('#down');
+const spanLives = document.querySelector('#lives');
+const spanTime = document.querySelector('#time');
 
+/* Default de variables */
 let canvasSize;
 let elementsSize;
 let level = 0;
-
+let vidas = 3;
 const playerPosition = {
     x: undefined, 
     y: undefined,
@@ -18,10 +22,14 @@ const giftPosition = {
     y: undefined,
 }
 let bombPosition = [];
+let timeStart = Date.now();
+let timeInterval = setInterval(() => renderTime(), 100);
 
+/* Listeners */
 window.addEventListener('load', setCanvasSize);
 window.addEventListener('resize', setCanvasSize);
 
+/* Renderizado del canvas */
 function setCanvasSize() {
     if (window.innerHeight > window.innerWidth) {
         canvasSize = window.innerWidth * 0.8;
@@ -37,6 +45,7 @@ function setCanvasSize() {
     startGame();
 }
 
+/* Inicialización del juego */
 function startGame() {
     game.font = elementsSize + 'px Verdana';
     game.textAlign = 'end';
@@ -71,38 +80,66 @@ function startGame() {
          });
     });
 
+    renderVidas();
     movePlayer();
 }
 
+/* Muevo el personaje */
 function movePlayer() {
     game.fillText(emojis['PLAYER'], elementsSize * playerPosition.x, elementsSize * playerPosition.y);
 
     if (playerPosition.x === giftPosition.x && playerPosition.y === giftPosition.y) {
-        if (level <= 1) {
+
+        /* Paso al siguiente nivel */
+        if (level < maps.length - 1) {
             level += 1
-            playerPosition.x = undefined;
-            playerPosition.y = undefined;
-            giftPosition.x = undefined;
-            giftPosition.y = undefined;
-            bombPosition = [];
+            limpiarPosiciones();
             startGame();    
         } else {
             alert('Felicitaciones! Ya no hay más niveles :(');
-        }        
+            clearInterval(timeInterval);
+        }    
+
     }
     for (const bomb of bombPosition) {
-        if (playerPosition.x === bomb.x && playerPosition.y === bomb.y) {
-            alert('Ouch!');
-            playerPosition.x = undefined;
-            playerPosition.y = undefined;
-            giftPosition.x = undefined;
-            giftPosition.y = undefined;
-            bombPosition = [];
-            level = 0;
+        if (playerPosition.x === bomb.x && playerPosition.y === bomb.y) {            
+            
+            vidas--;
+
+            /* Arranco de nuevo el nivel */
+            limpiarPosiciones();  
+            if (vidas == 0) {              
+                /* Arranco de nuevo el juego entero */  
+                level = 0;
+                vidas = 3;
+            } else {
+                renderVidas();                                
+            }
             startGame();
             break;
+
         }
     }
+}
+
+function limpiarPosiciones() {
+    playerPosition.x = undefined;
+    playerPosition.y = undefined;
+    giftPosition.x = undefined;
+    giftPosition.y = undefined;
+    bombPosition = [];
+}
+
+function renderVidas() {
+    spanLives.innerHTML = '';
+    for (let heartIndex = 0; heartIndex < vidas; heartIndex++) {
+        spanLives.innerHTML += emojis['HEART'];
+    }
+}
+
+function renderTime() {
+    let timeDiff = Date.now() - timeStart ;
+    spanTime.innerHTML = timeDiff;
 }
 
 /* Comportamiento de los botones y las teclas del teclado */
@@ -141,3 +178,4 @@ function moveByKeys(event) {
     else if (event.key === 'ArrowRight') moveRight();
     else if (event.key === 'ArrowDown') moveDown();
 }
+
