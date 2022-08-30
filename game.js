@@ -7,6 +7,7 @@ const btnRight = document.querySelector('#right');
 const btnDown = document.querySelector('#down');
 const spanLives = document.querySelector('#lives');
 const spanTime = document.querySelector('#time');
+const spanRecord = document.querySelector('#record');
 
 /* Default de variables */
 let canvasSize;
@@ -32,9 +33,9 @@ window.addEventListener('resize', setCanvasSize);
 /* Renderizado del canvas */
 function setCanvasSize() {
     if (window.innerHeight > window.innerWidth) {
-        canvasSize = window.innerWidth * 0.8;
+        canvasSize = window.innerWidth * 0.7;
     } else {
-        canvasSize = window.innerHeight * 0.8;
+        canvasSize = window.innerHeight * 0.7;
     }
   
     canvas.setAttribute('width', canvasSize);
@@ -80,6 +81,13 @@ function startGame() {
          });
     });
 
+    if (localStorage.getItem('timeRecord') != undefined && localStorage.getItem('timeRecord') != 0) {
+        spanRecord.innerHTML = localStorage.getItem('timeRecord');
+    } else {
+        spanRecord.innerHTML = 'No hay ningún record todavía.'
+    }
+    
+
     renderVidas();
     movePlayer();
 }
@@ -96,7 +104,13 @@ function movePlayer() {
             limpiarPosiciones();
             startGame();    
         } else {
-            alert('Felicitaciones! Ya no hay más niveles :(');
+            let timeDiff = Date.now() - timeStart
+            if ((timeDiff < localStorage.getItem('timeRecord')) || localStorage.getItem('timeRecord') == undefined) {
+                localStorage.setItem('timeRecord', timeDiff);
+                alert('Felicitaciones! Superaste todos los niveles en tiempo record');
+            } else {
+                alert('Felicitaciones, pero no fuiste el mejor. Sigue intentando.');
+            }            
             clearInterval(timeInterval);
         }    
 
